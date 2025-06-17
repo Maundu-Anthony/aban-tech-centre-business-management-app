@@ -7,16 +7,17 @@ function UserPage({ user, onLogout }) {
     amount: '',
     date: new Date().toISOString().split('T')[0],
     shop: '',
+    description: '',
   });
   const [expenseForm, setExpenseForm] = useState({
     category: 'Supplies',
     amount: '',
     date: new Date().toISOString().split('T')[0],
     shop: '',
+    description: '',
   });
   const [revenues, setRevenues] = useState([]);
   const [expenses, setExpenses] = useState([]);
-  const [shops, setShops] = useState([]);
   const navigate = useNavigate();
 
   const revenueActivities = ['WiFi Hotspot', 'Cyber Cafe Services', 'M-Pesa Commission', 'SIM Registration & Replacement'];
@@ -42,7 +43,6 @@ function UserPage({ user, onLogout }) {
           const foundShop = shopsData.find((s) => s.id === user.shopId);
           userShop = foundShop ? foundShop.name : '';
         }
-        setShops(shopsData.map((s) => s.name));
         if (!revenueForm.shop && userShop) setRevenueForm((prev) => ({ ...prev, shop: userShop }));
         if (!expenseForm.shop && userShop) setExpenseForm((prev) => ({ ...prev, shop: userShop }));
       } catch (error) {
@@ -83,6 +83,7 @@ function UserPage({ user, onLogout }) {
         amount: '',
         date: new Date().toISOString().split('T')[0],
         shop: revenueForm.shop,
+        description: '',
       });
       alert('Revenue recorded successfully!');
     } catch (error) {
@@ -112,6 +113,7 @@ function UserPage({ user, onLogout }) {
         amount: '',
         date: new Date().toISOString().split('T')[0],
         shop: expenseForm.shop,
+        description: '',
       });
       alert('Expense recorded successfully!');
     } catch (error) {
@@ -140,7 +142,7 @@ function UserPage({ user, onLogout }) {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="w-full mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-semibold text-indigo-900">
             Revenue & Expense Tracking - {user.username || user.email} at {revenueForm.shop || 'No Shop Assigned'}
@@ -195,6 +197,15 @@ function UserPage({ user, onLogout }) {
                 readOnly
                 required
               />
+              <input
+                type="text"
+                name="description"
+                placeholder="Short description (optional)"
+                className="w-full p-2 border border-gray-300 rounded-md"
+                value={revenueForm.description}
+                onChange={handleRevenueChange}
+                maxLength={100}
+              />
               <button
                 type="submit"
                 className="w-full bg-indigo-600 text-white p-2 rounded-md hover:bg-indigo-700 transition-colors duration-200"
@@ -245,6 +256,15 @@ function UserPage({ user, onLogout }) {
                 readOnly
                 required
               />
+              <input
+                type="text"
+                name="description"
+                placeholder="Short description (optional)"
+                className="w-full p-2 border border-gray-300 rounded-md"
+                value={expenseForm.description}
+                onChange={handleExpenseChange}
+                maxLength={100}
+              />
               <button
                 type="submit"
                 className="w-full bg-indigo-600 text-white p-2 rounded-md hover:bg-indigo-700 transition-colors duration-200"
@@ -266,6 +286,7 @@ function UserPage({ user, onLogout }) {
                   <th className="px-4 py-2 text-left text-gray-600">Timestamp</th>
                   <th className="px-4 py-2 text-left text-gray-600">Shop</th>
                   <th className="px-4 py-2 text-left text-gray-600">Recorded By</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Description</th>
                 </tr>
               </thead>
               <tbody>
@@ -277,6 +298,7 @@ function UserPage({ user, onLogout }) {
                     <td className="px-4 py-2 text-gray-800">{formatTimestamp(revenue.timestamp)}</td>
                     <td className="px-4 py-2 text-gray-800">{revenue.shop}</td>
                     <td className="px-4 py-2 text-gray-800">{revenue.username}</td>
+                    <td className="px-4 py-2 text-gray-800">{revenue.description || ''}</td>
                   </tr>
                 ))}
               </tbody>
@@ -295,6 +317,7 @@ function UserPage({ user, onLogout }) {
                   <th className="px-4 py-2 text-left text-gray-600">Timestamp</th>
                   <th className="px-4 py-2 text-left text-gray-600">Shop</th>
                   <th className="px-4 py-2 text-left text-gray-600">Recorded By</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Description</th>
                 </tr>
               </thead>
               <tbody>
@@ -306,6 +329,7 @@ function UserPage({ user, onLogout }) {
                     <td className="px-4 py-2 text-gray-800">{formatTimestamp(expense.timestamp)}</td>
                     <td className="px-4 py-2 text-gray-800">{expense.shop}</td>
                     <td className="px-4 py-2 text-gray-800">{expense.username}</td>
+                    <td className="px-4 py-2 text-gray-800">{expense.description || ''}</td>
                   </tr>
                 ))}
               </tbody>

@@ -7,76 +7,74 @@
       "id": "1"
     },
     {
-      "id": "025e",
+      "id": "0872",
       "email": "ann@gmail.com",
-      "username": "ann",
+      "username": "Ann",
       "password": "2017",
       "role": "user",
-      "shopId": "6d74",
+      "shopId": "4b6c",
       "status": "active"
     },
     {
-      "id": "ee5e",
+      "id": "9089",
       "email": "abby@gmail.com",
       "username": "Abby",
       "password": "2021",
       "role": "user",
-      "shopId": "ba10"
+      "shopId": "4b6c"
     }
   ],
   "revenues": [
     {
-      "id": "cd0c",
+      "id": "7b17",
       "activity": "WiFi Hotspot",
-      "amount": "350",
+      "amount": "310",
       "date": "2025-06-17",
       "shop": "Kwa Kathoka",
-      "userId": "025e",
-      "username": "ann",
-      "timestamp": "2025-06-17T09:50:51.945Z"
+      "userId": "0872",
+      "username": "Ann",
+      "timestamp": "2025-06-17T12:31:42.037Z"
     },
     {
-      "id": "fcac",
-      "activity": "WiFi Hotspot",
-      "amount": "1900",
-      "date": "2025-06-17",
-      "shop": "Wote",
-      "userId": "ee5e",
-      "username": "Abby",
-      "timestamp": "2025-06-17T10:33:28.480Z"
-    },
-    {
-      "id": "cf71",
-      "activity": "SIM Registration & Replacement",
+      "id": "982c",
+      "activity": "Cyber Cafe Services",
       "amount": "250",
       "date": "2025-06-17",
-      "shop": "Wote",
-      "userId": "ee5e",
+      "shop": "Kwa Kathoka",
+      "description": "Printed 7 pages b/w",
+      "userId": "0872",
+      "username": "Ann",
+      "timestamp": "2025-06-17T12:42:00.088Z"
+    },
+    {
+      "id": "a355",
+      "activity": "WiFi Hotspot",
+      "amount": "20",
+      "date": "2025-06-17",
+      "shop": "Kwa Kathoka",
+      "description": "3 hours internet",
+      "userId": "9089",
       "username": "Abby",
-      "timestamp": "2025-06-17T10:33:37.772Z"
+      "timestamp": "2025-06-17T13:00:24.444Z"
     }
   ],
   "expenses": [
     {
-      "id": "3ebd",
-      "category": "Logistics",
-      "amount": "50",
+      "id": "4ce8",
+      "category": "Supplies",
+      "amount": "2500",
       "date": "2025-06-17",
       "shop": "Kwa Kathoka",
-      "userId": "025e",
-      "username": "ann",
-      "timestamp": "2025-06-17T10:35:56.419Z"
+      "description": "5 ream papers",
+      "userId": "0872",
+      "username": "Ann",
+      "timestamp": "2025-06-17T13:23:24.223Z"
     }
   ],
   "shops": [
     {
-      "id": "6d74",
+      "id": "4b6c",
       "name": "Kwa Kathoka",
-      "status": "active"
-    },
-    {
-      "id": "ba10",
-      "name": "Wote",
       "status": "active"
     }
   ]

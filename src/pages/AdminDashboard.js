@@ -11,9 +11,14 @@ function AdminDashboard({ user, onLogout }) {
     amount: '',
     date: new Date().toISOString().split('T')[0],
     shop: '',
+    description: '',
   });
+  // Removed unused state variables
+  // const [revenueDescriptions, setRevenueDescriptions] = useState({});
+  // const [expenseDescriptions, setExpenseDescriptions] = useState({});
   const [selectedShop, setSelectedShop] = useState('');
   const [newShop, setNewShop] = useState('');
+  const [filterDate, setFilterDate] = useState('');
   const navigate = useNavigate();
   const adminExpenseCategories = ['Rent', 'Internet Subscription', 'Utilities'];
 
@@ -44,6 +49,7 @@ function AdminDashboard({ user, onLogout }) {
         setUsers(usersData);
         setRevenues(revenueData);
         setShops(shopsData);
+
         // Set default selected shop to first active shop
         const activeShops = shopsData.filter((s) => s.status === "active");
         if (activeShops.length && !selectedShop) {
@@ -91,6 +97,7 @@ function AdminDashboard({ user, onLogout }) {
         amount: '',
         date: new Date().toISOString().split('T')[0],
         shop: selectedShop || '',
+        description: '',
       });
       alert('Expense recorded successfully!');
     } catch (error) {
@@ -167,9 +174,15 @@ function AdminDashboard({ user, onLogout }) {
     });
   };
 
-  // Filtered records for selected shop
-  const filteredRevenues = revenues.filter((r) => r.shop === selectedShop);
-  const filteredExpenses = expenses.filter((e) => e.shop === selectedShop);
+  // Filtered records for selected shop and filterDate
+  const filteredRevenues = revenues.filter((r) =>
+    r.shop === selectedShop &&
+    filterDate && r.date >= filterDate // Only show if filterDate is set
+  );
+  const filteredExpenses = expenses.filter((e) =>
+    e.shop === selectedShop &&
+    filterDate && e.date >= filterDate // Only show if filterDate is set
+  );
 
   // Totals
   const totalRevenue = filteredRevenues.reduce((sum, r) => sum + parseFloat(r.amount || 0), 0);
@@ -178,7 +191,7 @@ function AdminDashboard({ user, onLogout }) {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="w-full mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-semibold text-indigo-900">Admin Dashboard - {user.email}</h1>
           <button
@@ -188,7 +201,7 @@ function AdminDashboard({ user, onLogout }) {
             Logout
           </button>
         </div>
-        {/* Shop selector */}
+        {/* Shop selector and date filter */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
           <label className="block text-gray-700 mb-2 font-medium">Select Shop</label>
           <select
@@ -200,6 +213,15 @@ function AdminDashboard({ user, onLogout }) {
               <option key={shop.id} value={shop.name}>{shop.name}</option>
             ))}
           </select>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-1">Show records from:</label>
+            <input
+              type="date"
+              className="p-2 border border-gray-300 rounded-md"
+              value={filterDate}
+              onChange={e => setFilterDate(e.target.value)}
+            />
+          </div>
           <div className="flex gap-4">
             <div className="bg-indigo-100 p-4 rounded flex-1 text-center">
               <div className="text-lg text-gray-700 font-medium">Total Revenue</div>
@@ -215,6 +237,71 @@ function AdminDashboard({ user, onLogout }) {
             </div>
           </div>
         </div>
+        {/* Revenue Table */}
+        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+          <h2 className="text-xl font-medium text-gray-700 mb-4">Revenues for {selectedShop}</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="px-4 py-2 text-left text-gray-600">Activity</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Amount (KES)</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Date</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Timestamp</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Shop</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Recorded By</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRevenues.map((revenue) => (
+                  <tr key={revenue.id} className="border-b border-gray-200">
+                    <td className="px-4 py-2 text-gray-800">{revenue.activity}</td>
+                    <td className="px-4 py-2 text-gray-800">{revenue.amount}</td>
+                    <td className="px-4 py-2 text-gray-800">{revenue.date}</td>
+                    <td className="px-4 py-2 text-gray-800">{formatTimestamp(revenue.timestamp)}</td>
+                    <td className="px-4 py-2 text-gray-800">{revenue.shop}</td>
+                    <td className="px-4 py-2 text-gray-800">{revenue.username}</td>
+                    <td className="px-4 py-2 text-gray-800">{revenue.description || ''}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {/* Expenses Table */}
+        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+          <h2 className="text-xl font-medium text-gray-700 mb-4">Expenses for {selectedShop}</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="px-4 py-2 text-left text-gray-600">Category</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Amount (KES)</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Date</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Timestamp</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Shop</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Recorded By</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredExpenses.map((expense) => (
+                  <tr key={expense.id} className="border-b border-gray-200">
+                    <td className="px-4 py-2 text-gray-800">{expense.category}</td>
+                    <td className="px-4 py-2 text-gray-800">{expense.amount}</td>
+                    <td className="px-4 py-2 text-gray-800">{expense.date}</td>
+                    <td className="px-4 py-2 text-gray-800">{formatTimestamp(expense.timestamp)}</td>
+                    <td className="px-4 py-2 text-gray-800">{expense.shop}</td>
+                    <td className="px-4 py-2 text-gray-800">{expense.username}</td>
+                    <td className="px-4 py-2 text-gray-800">{expense.description || ''}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {/* Record Expense */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
           <h2 className="text-xl font-medium text-gray-700 mb-4">Record Expense</h2>
           <form onSubmit={handleExpenseSubmit} className="space-y-4">
@@ -256,6 +343,15 @@ function AdminDashboard({ user, onLogout }) {
               readOnly
               required
             />
+            <input
+              type="text"
+              name="description"
+              placeholder="Short description (optional)"
+              className="w-full p-2 border border-gray-300 rounded-md"
+              value={expenseForm.description}
+              onChange={handleExpenseChange}
+              maxLength={100}
+            />
             <button
               type="submit"
               className="w-full bg-indigo-600 text-white p-2 rounded-md hover:bg-indigo-700 transition-colors duration-200"
@@ -264,6 +360,7 @@ function AdminDashboard({ user, onLogout }) {
             </button>
           </form>
         </div>
+        {/* Manage Users */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
           <h2 className="text-xl font-medium text-gray-700 mb-4">Manage Users</h2>
           <div className="overflow-x-auto">
@@ -299,6 +396,7 @@ function AdminDashboard({ user, onLogout }) {
             </table>
           </div>
         </div>
+        {/* Manage Shops */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
           <h2 className="text-xl font-medium text-gray-700 mb-4">Manage Shops</h2>
           {/* Shop creation form */}
@@ -342,66 +440,6 @@ function AdminDashboard({ user, onLogout }) {
                         <option value="closed">Closed</option>
                       </select>
                     </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        {/* Revenue Table */}
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-          <h2 className="text-xl font-medium text-gray-700 mb-4">Revenues for {selectedShop}</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="px-4 py-2 text-left text-gray-600">Activity</th>
-                  <th className="px-4 py-2 text-left text-gray-600">Amount (KES)</th>
-                  <th className="px-4 py-2 text-left text-gray-600">Date</th>
-                  <th className="px-4 py-2 text-left text-gray-600">Timestamp</th>
-                  <th className="px-4 py-2 text-left text-gray-600">Shop</th>
-                  <th className="px-4 py-2 text-left text-gray-600">Recorded By</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRevenues.map((revenue) => (
-                  <tr key={revenue.id} className="border-b border-gray-200">
-                    <td className="px-4 py-2 text-gray-800">{revenue.activity}</td>
-                    <td className="px-4 py-2 text-gray-800">{revenue.amount}</td>
-                    <td className="px-4 py-2 text-gray-800">{revenue.date}</td>
-                    <td className="px-4 py-2 text-gray-800">{formatTimestamp(revenue.timestamp)}</td>
-                    <td className="px-4 py-2 text-gray-800">{revenue.shop}</td>
-                    <td className="px-4 py-2 text-gray-800">{revenue.username}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        {/* Expenses Table */}
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-          <h2 className="text-xl font-medium text-gray-700 mb-4">Expenses for {selectedShop}</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="px-4 py-2 text-left text-gray-600">Category</th>
-                  <th className="px-4 py-2 text-left text-gray-600">Amount (KES)</th>
-                  <th className="px-4 py-2 text-left text-gray-600">Date</th>
-                  <th className="px-4 py-2 text-left text-gray-600">Timestamp</th>
-                  <th className="px-4 py-2 text-left text-gray-600">Shop</th>
-                  <th className="px-4 py-2 text-left text-gray-600">Recorded By</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredExpenses.map((expense) => (
-                  <tr key={expense.id} className="border-b border-gray-200">
-                    <td className="px-4 py-2 text-gray-800">{expense.category}</td>
-                    <td className="px-4 py-2 text-gray-800">{expense.amount}</td>
-                    <td className="px-4 py-2 text-gray-800">{expense.date}</td>
-                    <td className="px-4 py-2 text-gray-800">{formatTimestamp(expense.timestamp)}</td>
-                    <td className="px-4 py-2 text-gray-800">{expense.shop}</td>
-                    <td className="px-4 py-2 text-gray-800">{expense.username}</td>
                   </tr>
                 ))}
               </tbody>
