@@ -7,7 +7,12 @@ import AdminDashboard from './pages/AdminDashboard';
 function App() {
   const [user, setUser] = useState(null);
 
+  // Only allow login if user is not fired
   const handleLogin = (userData) => {
+    if (userData.status === 'fired') {
+      alert('Your account has been deactivated. Please contact the admin.');
+      return;
+    }
     setUser(userData);
   };
 

@@ -7,22 +7,77 @@
       "id": "1"
     },
     {
-      "id": "c9de",
+      "id": "025e",
+      "email": "ann@gmail.com",
+      "username": "ann",
+      "password": "2017",
+      "role": "user",
+      "shopId": "6d74",
+      "status": "active"
+    },
+    {
+      "id": "ee5e",
       "email": "abby@gmail.com",
-      "username": "abigael",
+      "username": "Abby",
       "password": "2021",
-      "role": "user"
+      "role": "user",
+      "shopId": "ba10"
     }
   ],
   "revenues": [
     {
-      "id": "a45f",
+      "id": "cd0c",
       "activity": "WiFi Hotspot",
-      "amount": "20",
+      "amount": "350",
       "date": "2025-06-17",
-      "userId": "c9de",
-      "username": "abigael",
-      "timestamp": "2025-06-17T07:54:48.509Z"
+      "shop": "Kwa Kathoka",
+      "userId": "025e",
+      "username": "ann",
+      "timestamp": "2025-06-17T09:50:51.945Z"
+    },
+    {
+      "id": "fcac",
+      "activity": "WiFi Hotspot",
+      "amount": "1900",
+      "date": "2025-06-17",
+      "shop": "Wote",
+      "userId": "ee5e",
+      "username": "Abby",
+      "timestamp": "2025-06-17T10:33:28.480Z"
+    },
+    {
+      "id": "cf71",
+      "activity": "SIM Registration & Replacement",
+      "amount": "250",
+      "date": "2025-06-17",
+      "shop": "Wote",
+      "userId": "ee5e",
+      "username": "Abby",
+      "timestamp": "2025-06-17T10:33:37.772Z"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "3ebd",
+      "category": "Logistics",
+      "amount": "50",
+      "date": "2025-06-17",
+      "shop": "Kwa Kathoka",
+      "userId": "025e",
+      "username": "ann",
+      "timestamp": "2025-06-17T10:35:56.419Z"
+    }
+  ],
+  "shops": [
+    {
+      "id": "6d74",
+      "name": "Kwa Kathoka",
+      "status": "active"
+    },
+    {
+      "id": "ba10",
+      "name": "Wote",
+      "status": "active"
     }
   ]
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Authentication({ onLogin }) {
@@ -8,9 +8,25 @@ function Authentication({ onLogin }) {
     username: '',
     password: '',
     confirmPassword: '',
-    role: 'user', // Default to user
+    role: 'user',
+    shopId: '',
   });
+  const [shops, setShops] = useState([]);
   const navigate = useNavigate();
+
+  // Fetch shops for registration dropdown
+  useEffect(() => {
+    const fetchShops = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/shops');
+        const data = await response.json();
+        setShops(data);
+      } catch (error) {
+        console.error('Error fetching shops:', error);
+      }
+    };
+    fetchShops();
+  }, []);
 
   const toggleMode = () => {
     setIsRegistering(!isRegistering);
@@ -20,6 +36,7 @@ function Authentication({ onLogin }) {
       password: '',
       confirmPassword: '',
       role: 'user',
+      shopId: '',
     });
   };
 
@@ -36,7 +53,7 @@ function Authentication({ onLogin }) {
     }
 
     const url = isRegistering
-      ? 'http://localhost:5000/users' // json-server endpoint
+      ? 'http://localhost:5000/users'
       : 'http://localhost:5000/login';
 
     try {
@@ -49,8 +66,9 @@ function Authentication({ onLogin }) {
           body: JSON.stringify({
             email: form.email,
             username: form.username,
-            password: form.password, // In a real app, hash this!
-            role: 'user', // Force user role for registration
+            password: form.password,
+            role: 'user',
+            shopId: form.shopId,
           }),
         });
 
@@ -58,11 +76,10 @@ function Authentication({ onLogin }) {
           throw new Error('Registration failed');
         }
 
-        await response.json(); // Parse response but don't assign to unused variable
+        await response.json();
         alert('Registration successful! Please log in.');
         toggleMode();
       } else {
-        // Login: Check if user exists and credentials match
         const response = await fetch(
           `http://localhost:5000/users?email=${form.email}&password=${form.password}&role=${form.role}`
         );
@@ -74,7 +91,14 @@ function Authentication({ onLogin }) {
         }
 
         const user = users[0];
-        onLogin(user); // Pass user data to App.js
+
+        // Prevent login and success message if user is fired
+        if (user.status === 'fired') {
+          alert('Your account has been deactivated. Please contact the admin.');
+          return;
+        }
+
+        onLogin(user);
         alert(`Login successful! Welcome ${user.username || user.email} (${user.role})`);
         navigate(user.role === 'admin' ? '/admin' : '/user');
       }
@@ -116,15 +140,29 @@ function Authentication({ onLogin }) {
             required
           />
           {isRegistering && (
-            <input
-              type="text"
-              name="username"
-              placeholder="Username"
-              className="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={form.username}
-              onChange={handleChange}
-              required
-            />
+            <>
+              <input
+                type="text"
+                name="username"
+                placeholder="Username"
+                className="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={form.username}
+                onChange={handleChange}
+                required
+              />
+              <select
+                name="shopId"
+                className="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={form.shopId}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select Shop</option>
+                {shops.map((shop) => (
+                  <option key={shop.id} value={shop.id}>{shop.name}</option>
+                ))}
+              </select>
+            </>
           )}
           <input
             type="password"
@@ -140,7 +178,7 @@ function Authentication({ onLogin }) {
               type="password"
               name="confirmPassword"
               placeholder="Confirm Password"
-              className="w-full px-4 py-2 border rounded-xl focus: outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={form.confirmPassword}
               onChange={handleChange}
               required
