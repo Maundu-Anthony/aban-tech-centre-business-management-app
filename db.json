@@ -1,0 +1,17 @@
+{
+  "users": [
+    {
+      "email": "anthonymaundu1@gmail.com",
+      "password": "Abercrombie1000",
+      "role": "admin",
+      "id": "1"
+    },
+    {
+      "id": "c9de",
+      "email": "abby@gmail.com",
+      "username": "abigael",
+      "password": "2021",
+      "role": "user"
+    }
+  ]
+}
