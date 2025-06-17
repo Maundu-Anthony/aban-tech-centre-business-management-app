@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function Authentication() {
+function Authentication({ onLogin }) {
   const [isRegistering, setIsRegistering] = useState(false);
   const [form, setForm] = useState({
     email: '',
@@ -9,6 +10,7 @@ function Authentication() {
     confirmPassword: '',
     role: 'user', // Default to user
   });
+  const navigate = useNavigate();
 
   const toggleMode = () => {
     setIsRegistering(!isRegistering);
@@ -72,12 +74,13 @@ function Authentication() {
         }
 
         const user = users[0];
+        onLogin(user); // Pass user data to App.js
         alert(`Login successful! Welcome ${user.username || user.email} (${user.role})`);
-        console.log('Logged in user:', user);
+        navigate(user.role === 'admin' ? '/admin' : '/user');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Something went wrong. Check the console for details.');
+      alert('Something went wrong. Check console for details.');
     }
   };
 
@@ -137,7 +140,7 @@ function Authentication() {
               type="password"
               name="confirmPassword"
               placeholder="Confirm Password"
-              className="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded-xl focus: outline-none focus:ring-2 focus:ring-blue-500"
               value={form.confirmPassword}
               onChange={handleChange}
               required
