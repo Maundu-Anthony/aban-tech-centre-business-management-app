@@ -13,9 +13,6 @@ function AdminDashboard({ user, onLogout }) {
     shop: '',
     description: '',
   });
-  // Removed unused state variables
-  // const [revenueDescriptions, setRevenueDescriptions] = useState({});
-  // const [expenseDescriptions, setExpenseDescriptions] = useState({});
   const [selectedShop, setSelectedShop] = useState('');
   const [newShop, setNewShop] = useState('');
   const [filterDate, setFilterDate] = useState('');
@@ -124,6 +121,21 @@ function AdminDashboard({ user, onLogout }) {
     } catch (error) {
       console.error('Error creating shop:', error);
       alert('Failed to create shop. Check console for details.');
+    }
+  };
+
+  // Delete Shop
+  const handleDeleteShop = async (shopId) => {
+    if (!window.confirm("Are you sure you want to delete this shop? This action cannot be undone.")) return;
+    try {
+      const response = await fetch(`https://aban-backend.vercel.app/shops/${shopId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete shop');
+      setShops(shops.filter((shop) => shop.id !== shopId));
+      alert('Shop deleted successfully!');
+    } catch (error) {
+      alert('Failed to delete shop.');
     }
   };
 
@@ -444,7 +456,7 @@ function AdminDashboard({ user, onLogout }) {
                   <tr key={shop.id} className="border-b border-gray-200">
                     <td className="px-4 py-2 text-gray-800">{shop.name}</td>
                     <td className="px-4 py-2 text-gray-800">{shop.status || "active"}</td>
-                    <td className="px-4 py-2">
+                    <td className="px-4 py-2 flex gap-2 items-center">
                       <select
                         value={shop.status || "active"}
                         onChange={e => handleShopStatusChange(shop.name, e.target.value)}
@@ -453,6 +465,13 @@ function AdminDashboard({ user, onLogout }) {
                         <option value="active">Active</option>
                         <option value="closed">Closed</option>
                       </select>
+                      <button
+                        onClick={() => handleDeleteShop(shop.id)}
+                        className="ml-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
+                        type="button"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
