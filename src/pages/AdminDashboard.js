@@ -153,7 +153,7 @@ function AdminDashboard({ user, onLogout }) {
     }
   };
 
-  // Classify shop as active/closed
+  // Classify shop as active/closed (not used in UI anymore)
   const handleShopStatusChange = async (shopName, status) => {
     try {
       const shopObj = shops.find((s) => s.name === shopName);
@@ -447,7 +447,6 @@ function AdminDashboard({ user, onLogout }) {
               <thead>
                 <tr className="bg-gray-100">
                   <th className="px-4 py-2 text-left text-gray-600">Shop Name</th>
-                  <th className="px-4 py-2 text-left text-gray-600">Status</th>
                   <th className="px-4 py-2 text-left text-gray-600">Action</th>
                 </tr>
               </thead>
@@ -455,7 +454,6 @@ function AdminDashboard({ user, onLogout }) {
                 {shops.map((shop) => (
                   <tr key={shop.id} className="border-b border-gray-200">
                     <td className="px-4 py-2 text-gray-800">{shop.name}</td>
-                    <td className="px-4 py-2 text-gray-800">{shop.status || "active"}</td>
                     <td className="px-4 py-2 flex gap-2 items-center">
                       <button
                         onClick={() => handleDeleteShop(shop.id)}
