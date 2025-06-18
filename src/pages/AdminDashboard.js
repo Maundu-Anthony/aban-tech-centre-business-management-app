@@ -36,10 +36,10 @@ function AdminDashboard({ user, onLogout }) {
     const fetchData = async () => {
       try {
         const [expenseResponse, usersResponse, revenueResponse, shopsResponse] = await Promise.all([
-          fetch('http://localhost:5000/expenses'),
-          fetch('http://localhost:5000/users'),
-          fetch('http://localhost:5000/revenues'),
-          fetch('http://localhost:5000/shops'),
+          fetch('https://aban-backend.vercel.app/expenses'),
+          fetch('https://aban-backend.vercel.app/users'),
+          fetch('https://aban-backend.vercel.app/revenues'),
+          fetch('https://aban-backend.vercel.app/shops'),
         ]);
         const expenseData = await expenseResponse.json();
         const usersData = await usersResponse.json();
@@ -79,7 +79,7 @@ function AdminDashboard({ user, onLogout }) {
   const handleExpenseSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/expenses', {
+      const response = await fetch('https://aban-backend.vercel.app/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -111,7 +111,7 @@ function AdminDashboard({ user, onLogout }) {
     e.preventDefault();
     if (!newShop.trim()) return;
     try {
-      const response = await fetch('http://localhost:5000/shops', {
+      const response = await fetch('https://aban-backend.vercel.app/shops', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newShop.trim(), status: "active" }),
@@ -130,7 +130,7 @@ function AdminDashboard({ user, onLogout }) {
   // Classify user as active/fired
   const handleUserStatusChange = async (userId, status) => {
     try {
-      await fetch(`http://localhost:5000/users/${userId}`, {
+      await fetch(`https://aban-backend.vercel.app/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
@@ -146,7 +146,7 @@ function AdminDashboard({ user, onLogout }) {
     try {
       const shopObj = shops.find((s) => s.name === shopName);
       if (shopObj) {
-        await fetch(`http://localhost:5000/shops/${shopObj.id}`, {
+        await fetch(`https://aban-backend.vercel.app/shops/${shopObj.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status }),

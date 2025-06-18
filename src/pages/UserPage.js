@@ -27,9 +27,10 @@ function UserPage({ user, onLogout }) {
     const fetchData = async () => {
       try {
         const [revenueResponse, expenseResponse, shopsResponse] = await Promise.all([
-          fetch('http://localhost:5000/revenues'),
-          fetch('http://localhost:5000/expenses'),
-          fetch('http://localhost:5000/shops'),
+          fetch('https://aban-backend.vercel.app/revenues'),
+          fetch('https://aban-backend.vercel.app/expenses'),
+          fetch('https://aban-backend.vercel.app/shops')
+
         ]);
         const revenueData = await revenueResponse.json();
         const expenseData = await expenseResponse.json();
@@ -65,7 +66,7 @@ function UserPage({ user, onLogout }) {
   const handleRevenueSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/revenues', {
+      const response = await fetch('https://aban-backend.vercel.app/revenues', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -95,7 +96,7 @@ function UserPage({ user, onLogout }) {
   const handleExpenseSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/expenses', {
+      const response = await fetch('https://aban-backend.vercel.app/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

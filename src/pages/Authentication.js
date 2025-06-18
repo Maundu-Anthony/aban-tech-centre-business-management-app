@@ -18,7 +18,7 @@ function Authentication({ onLogin }) {
   useEffect(() => {
     const fetchShops = async () => {
       try {
-        const response = await fetch('http://localhost:5000/shops');
+        const response = await fetch(fetch('https://aban-backend.vercel.app/shops'));
         const data = await response.json();
         setShops(data);
       } catch (error) {
@@ -53,8 +53,8 @@ function Authentication({ onLogin }) {
     }
 
     const url = isRegistering
-      ? 'http://localhost:5000/users'
-      : 'http://localhost:5000/login';
+      ? 'https://aban-backend.vercel.app/users'
+      : 'https://aban-backend.vercel.app/login';
 
     try {
       if (isRegistering) {
@@ -81,7 +81,7 @@ function Authentication({ onLogin }) {
         toggleMode();
       } else {
         const response = await fetch(
-          `http://localhost:5000/users?email=${form.email}&password=${form.password}&role=${form.role}`
+          `https://aban-backend.vercel.app/users?email=${form.email}&password=${form.password}&role=${form.role}`
         );
         const users = await response.json();
 
