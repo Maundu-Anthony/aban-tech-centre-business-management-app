@@ -254,6 +254,13 @@ function AdminDashboard({ user, onLogout }) {
                 </tr>
               </thead>
               <tbody>
+                {filteredRevenues.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="text-center text-gray-400 py-4">
+                      {filterDate ? "No records found." : "Please select a date to view records."}
+                    </td>
+                  </tr>
+                )}
                 {filteredRevenues.map((revenue) => (
                   <tr key={revenue.id} className="border-b border-gray-200">
                     <td className="px-4 py-2 text-gray-800">{revenue.activity}</td>
@@ -286,6 +293,13 @@ function AdminDashboard({ user, onLogout }) {
                 </tr>
               </thead>
               <tbody>
+                {filteredExpenses.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="text-center text-gray-400 py-4">
+                      {filterDate ? "No records found." : "Please select a date to view records."}
+                    </td>
+                  </tr>
+                )}
                 {filteredExpenses.map((expense) => (
                   <tr key={expense.id} className="border-b border-gray-200">
                     <td className="px-4 py-2 text-gray-800">{expense.category}</td>
