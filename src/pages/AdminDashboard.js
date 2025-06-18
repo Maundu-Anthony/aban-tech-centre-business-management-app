@@ -457,17 +457,9 @@ function AdminDashboard({ user, onLogout }) {
                     <td className="px-4 py-2 text-gray-800">{shop.name}</td>
                     <td className="px-4 py-2 text-gray-800">{shop.status || "active"}</td>
                     <td className="px-4 py-2 flex gap-2 items-center">
-                      <select
-                        value={shop.status || "active"}
-                        onChange={e => handleShopStatusChange(shop.name, e.target.value)}
-                        className="border rounded p-1"
-                      >
-                        <option value="active">Active</option>
-                        <option value="closed">Closed</option>
-                      </select>
                       <button
                         onClick={() => handleDeleteShop(shop.id)}
-                        className="ml-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
+                        className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
                         type="button"
                       >
                         Delete
