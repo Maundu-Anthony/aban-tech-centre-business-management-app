@@ -1,0 +1,51 @@
+{
+  "users": [
+    {
+      "email": "anthonymaundu1@gmail.com",
+      "password": "Abercrombie1000.",
+      "role": "admin",
+      "id": "1"
+    },
+    {
+      "id": "2f3b",
+      "email": "anthonymaundu8@gmail.com",
+      "username": "Tony",
+      "password": "1995",
+      "role": "user",
+      "shopId": "b1da"
+    }
+  ],
+  "revenues": [
+    {
+      "id": "8686",
+      "activity": "WiFi Hotspot",
+      "amount": "220",
+      "date": "2025-06-20",
+      "shop": "Kwa Kathoka",
+      "description": "",
+      "userId": "2f3b",
+      "username": "Tony",
+      "timestamp": "2025-06-20T09:07:48.811Z"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "e77b",
+      "category": "Rent",
+      "amount": "2000",
+      "date": "2025-06-20",
+      "shop": "Kwa Kathoka",
+      "description": "Rent",
+      "userId": "1",
+      "username": "anthonymaundu1@gmail.com",
+      "timestamp": "2025-06-20T09:11:11.388Z"
+    }
+  ],
+  "shops": [
+    {
+      "id": "b1da",
+      "name": "Kwa Kathoka",
+      "status": "active"
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE = "http://localhost:5000";
+
 function Authentication({ onLogin }) {
   const [isRegistering, setIsRegistering] = useState(false);
   const [form, setForm] = useState({
@@ -18,7 +20,7 @@ function Authentication({ onLogin }) {
   useEffect(() => {
     const fetchShops = async () => {
       try {
-        const response = await fetch(fetch('https://aban-backend.vercel.app/shops'));
+        const response = await fetch(`${API_BASE}/shops`);
         const data = await response.json();
         setShops(data);
       } catch (error) {
@@ -53,8 +55,8 @@ function Authentication({ onLogin }) {
     }
 
     const url = isRegistering
-      ? 'https://aban-backend.vercel.app/users'
-      : 'https://aban-backend.vercel.app/login';
+      ? `${API_BASE}/users`
+      : `${API_BASE}/users?email=${form.email}&password=${form.password}&role=${form.role}`;
 
     try {
       if (isRegistering) {
@@ -80,9 +82,7 @@ function Authentication({ onLogin }) {
         alert('Registration successful! Please log in.');
         toggleMode();
       } else {
-        const response = await fetch(
-          `https://aban-backend.vercel.app/users?email=${form.email}&password=${form.password}&role=${form.role}`
-        );
+        const response = await fetch(url);
         const users = await response.json();
 
         if (users.length === 0) {

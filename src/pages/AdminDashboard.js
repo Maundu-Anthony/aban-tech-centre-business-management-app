@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE = "http://localhost:5000"; // Use your local json-server
+
 function AdminDashboard({ user, onLogout }) {
   const [expenses, setExpenses] = useState([]);
   const [revenues, setRevenues] = useState([]);
@@ -33,10 +35,10 @@ function AdminDashboard({ user, onLogout }) {
     const fetchData = async () => {
       try {
         const [expenseResponse, usersResponse, revenueResponse, shopsResponse] = await Promise.all([
-          fetch('https://aban-backend.vercel.app/expenses'),
-          fetch('https://aban-backend.vercel.app/users'),
-          fetch('https://aban-backend.vercel.app/revenues'),
-          fetch('https://aban-backend.vercel.app/shops'),
+          fetch(`${API_BASE}/expenses`),
+          fetch(`${API_BASE}/users`),
+          fetch(`${API_BASE}/revenues`),
+          fetch(`${API_BASE}/shops`),
         ]);
         const expenseData = await expenseResponse.json();
         const usersData = await usersResponse.json();
@@ -76,7 +78,7 @@ function AdminDashboard({ user, onLogout }) {
   const handleExpenseSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://aban-backend.vercel.app/expenses', {
+      const response = await fetch(`${API_BASE}/expenses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -108,12 +110,17 @@ function AdminDashboard({ user, onLogout }) {
     e.preventDefault();
     if (!newShop.trim()) return;
     try {
-      const response = await fetch('https://aban-backend.vercel.app/shops', {
+      const response = await fetch(`${API_BASE}/shops`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newShop.trim(), status: "active" }),
       });
-      if (!response.ok) throw new Error('Failed to create shop');
+      // Improved error logging
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Shop creation failed:', errorText);
+        throw new Error('Failed to create shop');
+      }
       const createdShop = await response.json();
       setShops((prev) => [...prev, createdShop]);
       setNewShop('');
@@ -128,7 +135,7 @@ function AdminDashboard({ user, onLogout }) {
   const handleDeleteShop = async (shopId) => {
     if (!window.confirm("Are you sure you want to delete this shop? This action cannot be undone.")) return;
     try {
-      const response = await fetch(`https://aban-backend.vercel.app/shops/${shopId}`, {
+      const response = await fetch(`${API_BASE}/shops/${shopId}`, {
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete shop');
@@ -142,7 +149,7 @@ function AdminDashboard({ user, onLogout }) {
   // Classify user as active/fired
   const handleUserStatusChange = async (userId, status) => {
     try {
-      await fetch(`https://aban-backend.vercel.app/users/${userId}`, {
+      await fetch(`${API_BASE}/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
@@ -153,22 +160,7 @@ function AdminDashboard({ user, onLogout }) {
     }
   };
 
-  // Classify shop as active/closed (not used in UI anymore)
-  const handleShopStatusChange = async (shopName, status) => {
-    try {
-      const shopObj = shops.find((s) => s.name === shopName);
-      if (shopObj) {
-        await fetch(`https://aban-backend.vercel.app/shops/${shopObj.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status }),
-        });
-        setShops(shops.map(s => s.name === shopName ? { ...s, status } : s));
-      }
-    } catch (error) {
-      alert('Failed to update shop status.');
-    }
-  };
+  // Removed unused handleShopStatusChange
 
   const handleLogoutClick = () => {
     onLogout();
@@ -475,3 +467,4 @@ function AdminDashboard({ user, onLogout }) {
 }
 
 export default AdminDashboard;
+// ...existing code...

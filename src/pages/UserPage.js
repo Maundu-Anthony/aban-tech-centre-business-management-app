@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE = "http://localhost:5000";
+
 function UserPage({ user, onLogout }) {
   const [revenueForm, setRevenueForm] = useState({
     activity: 'WiFi Hotspot',
@@ -27,10 +29,9 @@ function UserPage({ user, onLogout }) {
     const fetchData = async () => {
       try {
         const [revenueResponse, expenseResponse, shopsResponse] = await Promise.all([
-          fetch('https://aban-backend.vercel.app/revenues'),
-          fetch('https://aban-backend.vercel.app/expenses'),
-          fetch('https://aban-backend.vercel.app/shops')
-
+          fetch(`${API_BASE}/revenues`),
+          fetch(`${API_BASE}/expenses`),
+          fetch(`${API_BASE}/shops`)
         ]);
         const revenueData = await revenueResponse.json();
         const expenseData = await expenseResponse.json();
@@ -66,7 +67,7 @@ function UserPage({ user, onLogout }) {
   const handleRevenueSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://aban-backend.vercel.app/revenues', {
+      const response = await fetch(`${API_BASE}/revenues`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -96,7 +97,7 @@ function UserPage({ user, onLogout }) {
   const handleExpenseSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://aban-backend.vercel.app/expenses', {
+      const response = await fetch(`${API_BASE}/expenses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
