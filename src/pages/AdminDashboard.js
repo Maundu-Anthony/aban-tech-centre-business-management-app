@@ -17,9 +17,23 @@ function AdminDashboard({ user, onLogout }) {
   });
   const [selectedShop, setSelectedShop] = useState('');
   const [newShop, setNewShop] = useState('');
-  const [filterDate, setFilterDate] = useState('');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
+  const [revenuePage, setRevenuePage] = useState(1);
+  const [expensePage, setExpensePage] = useState(1);
+  const [activityFilter, setActivityFilter] = useState('');
+  const pageSize = 10;
   const navigate = useNavigate();
   const adminExpenseCategories = ['Rent', 'Internet Subscription', 'Utilities'];
+
+  // Add "Stationery" to revenue activities
+  const revenueActivities = [
+    'WiFi Hotspot',
+    'Cyber Cafe Services',
+    'M-Pesa Commission',
+    'SIM Registration & Replacement',
+    'Stationery'
+  ];
 
   // Block fired users from accessing the dashboard
   useEffect(() => {
@@ -71,6 +85,10 @@ function AdminDashboard({ user, onLogout }) {
     }
   }, [selectedShop]);
 
+  // Reset to first page when filters change
+  useEffect(() => { setRevenuePage(1); }, [selectedShop, filterDateFrom, filterDateTo, activityFilter, revenues]);
+  useEffect(() => { setExpensePage(1); }, [selectedShop, filterDateFrom, filterDateTo, expenses]);
+
   const handleExpenseChange = (e) => {
     setExpenseForm({ ...expenseForm, [e.target.name]: e.target.value });
   };
@@ -115,7 +133,6 @@ function AdminDashboard({ user, onLogout }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newShop.trim(), status: "active" }),
       });
-      // Improved error logging
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Shop creation failed:', errorText);
@@ -160,8 +177,6 @@ function AdminDashboard({ user, onLogout }) {
     }
   };
 
-  // Removed unused handleShopStatusChange
-
   const handleLogoutClick = () => {
     onLogout();
     navigate('/login');
@@ -178,15 +193,25 @@ function AdminDashboard({ user, onLogout }) {
     });
   };
 
-  // Filtered records for selected shop and filterDate
+  // Filtered records for selected shop, date range, and activity
   const filteredRevenues = revenues.filter((r) =>
     r.shop === selectedShop &&
-    filterDate && r.date >= filterDate // Only show if filterDate is set
+    (!filterDateFrom || r.date >= filterDateFrom) &&
+    (!filterDateTo || r.date <= filterDateTo) &&
+    (!activityFilter || r.activity === activityFilter)
   );
   const filteredExpenses = expenses.filter((e) =>
     e.shop === selectedShop &&
-    filterDate && e.date >= filterDate // Only show if filterDate is set
+    (!filterDateFrom || e.date >= filterDateFrom) &&
+    (!filterDateTo || e.date <= filterDateTo)
   );
+
+  // Pagination logic
+  const revenuePageCount = Math.ceil(filteredRevenues.length / pageSize);
+  const expensePageCount = Math.ceil(filteredExpenses.length / pageSize);
+
+  const paginatedRevenues = filteredRevenues.slice((revenuePage - 1) * pageSize, revenuePage * pageSize);
+  const paginatedExpenses = filteredExpenses.slice((expensePage - 1) * pageSize, expensePage * pageSize);
 
   // Totals
   const totalRevenue = filteredRevenues.reduce((sum, r) => sum + parseFloat(r.amount || 0), 0);
@@ -205,7 +230,7 @@ function AdminDashboard({ user, onLogout }) {
             Logout
           </button>
         </div>
-        {/* Shop selector and date filter */}
+        {/* Shop selector, date filter, and activity filter */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
           <label className="block text-gray-700 mb-2 font-medium">Select Shop</label>
           <select
@@ -217,14 +242,38 @@ function AdminDashboard({ user, onLogout }) {
               <option key={shop.id} value={shop.name}>{shop.name}</option>
             ))}
           </select>
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-1">Show records from:</label>
-            <input
-              type="date"
-              className="p-2 border border-gray-300 rounded-md"
-              value={filterDate}
-              onChange={e => setFilterDate(e.target.value)}
-            />
+          <div className="mb-4 flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <label className="block text-gray-700 mb-1">Show records from:</label>
+              <input
+                type="date"
+                className="p-2 border border-gray-300 rounded-md w-full"
+                value={filterDateFrom}
+                onChange={e => setFilterDateFrom(e.target.value)}
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-gray-700 mb-1">To:</label>
+              <input
+                type="date"
+                className="p-2 border border-gray-300 rounded-md w-full"
+                value={filterDateTo}
+                onChange={e => setFilterDateTo(e.target.value)}
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-gray-700 mb-1">Filter by Revenue Activity:</label>
+              <select
+                className="p-2 border border-gray-300 rounded-md w-full"
+                value={activityFilter}
+                onChange={e => setActivityFilter(e.target.value)}
+              >
+                <option value="">All</option>
+                {revenueActivities.map((activity) => (
+                  <option key={activity} value={activity}>{activity}</option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="flex gap-4">
             <div className="bg-indigo-100 p-4 rounded flex-1 text-center">
@@ -258,14 +307,14 @@ function AdminDashboard({ user, onLogout }) {
                 </tr>
               </thead>
               <tbody>
-                {filteredRevenues.length === 0 && (
+                {paginatedRevenues.length === 0 && (
                   <tr>
                     <td colSpan={7} className="text-center text-gray-400 py-4">
-                      {filterDate ? "No records found." : "Please select a date to view records."}
+                      {(filterDateFrom || filterDateTo || activityFilter) ? "No records found." : "Please select a date range or filter to view records."}
                     </td>
                   </tr>
                 )}
-                {filteredRevenues.map((revenue) => (
+                {paginatedRevenues.map((revenue) => (
                   <tr key={revenue.id} className="border-b border-gray-200">
                     <td className="px-4 py-2 text-gray-800">{revenue.activity}</td>
                     <td className="px-4 py-2 text-gray-800">{revenue.amount}</td>
@@ -279,6 +328,22 @@ function AdminDashboard({ user, onLogout }) {
               </tbody>
             </table>
           </div>
+          {/* Pagination controls for revenues */}
+          {revenuePageCount > 1 && (
+            <div className="flex justify-center mt-4 gap-2">
+              <button
+                onClick={() => setRevenuePage(p => Math.max(1, p - 1))}
+                disabled={revenuePage === 1}
+                className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+              >Prev</button>
+              <span className="px-2 py-1">{revenuePage} / {revenuePageCount}</span>
+              <button
+                onClick={() => setRevenuePage(p => Math.min(revenuePageCount, p + 1))}
+                disabled={revenuePage === revenuePageCount}
+                className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+              >Next</button>
+            </div>
+          )}
         </div>
         {/* Expenses Table */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -297,14 +362,14 @@ function AdminDashboard({ user, onLogout }) {
                 </tr>
               </thead>
               <tbody>
-                {filteredExpenses.length === 0 && (
+                {paginatedExpenses.length === 0 && (
                   <tr>
                     <td colSpan={7} className="text-center text-gray-400 py-4">
-                      {filterDate ? "No records found." : "Please select a date to view records."}
+                      {(filterDateFrom || filterDateTo) ? "No records found." : "Please select a date range to view records."}
                     </td>
                   </tr>
                 )}
-                {filteredExpenses.map((expense) => (
+                {paginatedExpenses.map((expense) => (
                   <tr key={expense.id} className="border-b border-gray-200">
                     <td className="px-4 py-2 text-gray-800">{expense.category}</td>
                     <td className="px-4 py-2 text-gray-800">{expense.amount}</td>
@@ -318,6 +383,22 @@ function AdminDashboard({ user, onLogout }) {
               </tbody>
             </table>
           </div>
+          {/* Pagination controls for expenses */}
+          {expensePageCount > 1 && (
+            <div className="flex justify-center mt-4 gap-2">
+              <button
+                onClick={() => setExpensePage(p => Math.max(1, p - 1))}
+                disabled={expensePage === 1}
+                className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+              >Prev</button>
+              <span className="px-2 py-1">{expensePage} / {expensePageCount}</span>
+              <button
+                onClick={() => setExpensePage(p => Math.min(expensePageCount, p + 1))}
+                disabled={expensePage === expensePageCount}
+                className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+              >Next</button>
+            </div>
+          )}
         </div>
         {/* Record Expense */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -467,4 +548,3 @@ function AdminDashboard({ user, onLogout }) {
 }
 
 export default AdminDashboard;
-// ...existing code...

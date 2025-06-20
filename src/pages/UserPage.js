@@ -20,9 +20,25 @@ function UserPage({ user, onLogout }) {
   });
   const [revenues, setRevenues] = useState([]);
   const [expenses, setExpenses] = useState([]);
+  const [editingRevenue, setEditingRevenue] = useState(null);
+  const [editingExpense, setEditingExpense] = useState(null);
+  const [revenuePage, setRevenuePage] = useState(1);
+  const [expensePage, setExpensePage] = useState(1);
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
+  const [activityFilter, setActivityFilter] = useState('');
+  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState('');
+  const pageSize = 10;
   const navigate = useNavigate();
 
-  const revenueActivities = ['WiFi Hotspot', 'Cyber Cafe Services', 'M-Pesa Commission', 'SIM Registration & Replacement'];
+  // Added "Stationery" to revenue activities
+  const revenueActivities = [
+    'WiFi Hotspot',
+    'Cyber Cafe Services',
+    'M-Pesa Commission',
+    'SIM Registration & Replacement',
+    'Stationery'
+  ];
   const expenseCategories = ['Supplies', 'Logistics'];
 
   useEffect(() => {
@@ -56,12 +72,76 @@ function UserPage({ user, onLogout }) {
     // eslint-disable-next-line
   }, [user]);
 
+  // Reset to first page when data or filters change
+  useEffect(() => { setRevenuePage(1); }, [revenues, filterDateFrom, filterDateTo, activityFilter]);
+  useEffect(() => { setExpensePage(1); }, [expenses, filterDateFrom, filterDateTo, expenseCategoryFilter]);
+
   const handleRevenueChange = (e) => {
     setRevenueForm({ ...revenueForm, [e.target.name]: e.target.value });
   };
 
   const handleExpenseChange = (e) => {
     setExpenseForm({ ...expenseForm, [e.target.name]: e.target.value });
+  };
+
+  // Edit handlers
+  const handleEditRevenue = (revenue) => {
+    setEditingRevenue(revenue);
+  };
+
+  const handleEditExpense = (expense) => {
+    setEditingExpense(expense);
+  };
+
+  const handleEditRevenueChange = (e) => {
+    setEditingRevenue({ ...editingRevenue, [e.target.name]: e.target.value });
+  };
+
+  const handleEditExpenseChange = (e) => {
+    setEditingExpense({ ...editingExpense, [e.target.name]: e.target.value });
+  };
+
+  const handleUpdateRevenue = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${API_BASE}/revenues/${editingRevenue.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingRevenue),
+      });
+      if (!response.ok) throw new Error('Failed to update revenue');
+      const updated = await response.json();
+      setRevenues(revenues.map(r => r.id === updated.id ? updated : r));
+      setEditingRevenue(null);
+      alert('Revenue updated successfully!');
+    } catch (error) {
+      console.error('Error updating revenue:', error);
+      alert('Failed to update revenue. Check console for details.');
+    }
+  };
+
+  const handleUpdateExpense = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${API_BASE}/expenses/${editingExpense.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingExpense),
+      });
+      if (!response.ok) throw new Error('Failed to update expense');
+      const updated = await response.json();
+      setExpenses(expenses.map(exp => exp.id === updated.id ? updated : exp));
+      setEditingExpense(null);
+      alert('Expense updated successfully!');
+    } catch (error) {
+      console.error('Error updating expense:', error);
+      alert('Failed to update expense. Check console for details.');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingRevenue(null);
+    setEditingExpense(null);
   };
 
   const handleRevenueSubmit = async (e) => {
@@ -140,6 +220,25 @@ function UserPage({ user, onLogout }) {
     });
   };
 
+  // Filtered records for date range and activity/category
+  const filteredRevenues = revenues.filter((r) =>
+    (!filterDateFrom || r.date >= filterDateFrom) &&
+    (!filterDateTo || r.date <= filterDateTo) &&
+    (!activityFilter || r.activity === activityFilter)
+  );
+  const filteredExpenses = expenses.filter((e) =>
+    (!filterDateFrom || e.date >= filterDateFrom) &&
+    (!filterDateTo || e.date <= filterDateTo) &&
+    (!expenseCategoryFilter || e.category === expenseCategoryFilter)
+  );
+
+  // Pagination logic
+  const revenuePageCount = Math.ceil(filteredRevenues.length / pageSize);
+  const expensePageCount = Math.ceil(filteredExpenses.length / pageSize);
+
+  const paginatedRevenues = filteredRevenues.slice((revenuePage - 1) * pageSize, revenuePage * pageSize);
+  const paginatedExpenses = filteredExpenses.slice((expensePage - 1) * pageSize, expensePage * pageSize);
+
   if (!user) return <div className="text-center py-10 text-gray-600">Loading...</div>;
 
   return (
@@ -155,6 +254,53 @@ function UserPage({ user, onLogout }) {
           >
             Logout
           </button>
+        </div>
+        {/* Date and activity/category filter controls */}
+        <div className="bg-white p-4 rounded-lg shadow mb-6 flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <label className="block text-gray-700 mb-1">Show records from:</label>
+            <input
+              type="date"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={filterDateFrom}
+              onChange={e => setFilterDateFrom(e.target.value)}
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block text-gray-700 mb-1">To:</label>
+            <input
+              type="date"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={filterDateTo}
+              onChange={e => setFilterDateTo(e.target.value)}
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block text-gray-700 mb-1">Filter by Revenue Activity:</label>
+            <select
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={activityFilter}
+              onChange={e => setActivityFilter(e.target.value)}
+            >
+              <option value="">All</option>
+              {revenueActivities.map((activity) => (
+                <option key={activity} value={activity}>{activity}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-1">
+            <label className="block text-gray-700 mb-1">Filter by Expense Category:</label>
+            <select
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={expenseCategoryFilter}
+              onChange={e => setExpenseCategoryFilter(e.target.value)}
+            >
+              <option value="">All</option>
+              {expenseCategories.map((category) => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-lg shadow-md">
@@ -289,23 +435,116 @@ function UserPage({ user, onLogout }) {
                   <th className="px-4 py-2 text-left text-gray-600">Shop</th>
                   <th className="px-4 py-2 text-left text-gray-600">Recorded By</th>
                   <th className="px-4 py-2 text-left text-gray-600">Description</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Edit</th>
                 </tr>
               </thead>
               <tbody>
-                {revenues.map((revenue) => (
-                  <tr key={revenue.id} className="border-b border-gray-200">
-                    <td className="px-4 py-2 text-gray-800">{revenue.activity}</td>
-                    <td className="px-4 py-2 text-gray-800">{revenue.amount}</td>
-                    <td className="px-4 py-2 text-gray-800">{revenue.date}</td>
-                    <td className="px-4 py-2 text-gray-800">{formatTimestamp(revenue.timestamp)}</td>
-                    <td className="px-4 py-2 text-gray-800">{revenue.shop}</td>
-                    <td className="px-4 py-2 text-gray-800">{revenue.username}</td>
-                    <td className="px-4 py-2 text-gray-800">{revenue.description || ''}</td>
+                {paginatedRevenues.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="text-center text-gray-400 py-4">
+                      {(filterDateFrom || filterDateTo || activityFilter) ? "No records found." : "Please select a date range or filter to view records."}
+                    </td>
                   </tr>
-                ))}
+                )}
+                {paginatedRevenues.map((revenue) =>
+                  editingRevenue && editingRevenue.id === revenue.id ? (
+                    <tr key={revenue.id} className="border-b border-gray-200 bg-yellow-50">
+                      <td className="px-4 py-2">
+                        <select
+                          name="activity"
+                          className="p-1 border rounded"
+                          value={editingRevenue.activity}
+                          onChange={handleEditRevenueChange}
+                        >
+                          {revenueActivities.map((activity) => (
+                            <option key={activity} value={activity}>{activity}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-4 py-2">
+                        <input
+                          type="number"
+                          name="amount"
+                          className="p-1 border rounded w-24"
+                          value={editingRevenue.amount}
+                          onChange={handleEditRevenueChange}
+                        />
+                      </td>
+                      <td className="px-4 py-2">
+                        <input
+                          type="date"
+                          name="date"
+                          className="p-1 border rounded"
+                          value={editingRevenue.date}
+                          onChange={handleEditRevenueChange}
+                        />
+                      </td>
+                      <td className="px-4 py-2">{formatTimestamp(editingRevenue.timestamp)}</td>
+                      <td className="px-4 py-2">{editingRevenue.shop}</td>
+                      <td className="px-4 py-2">{editingRevenue.username}</td>
+                      <td className="px-4 py-2">
+                        <input
+                          type="text"
+                          name="description"
+                          className="p-1 border rounded"
+                          value={editingRevenue.description}
+                          onChange={handleEditRevenueChange}
+                        />
+                      </td>
+                      <td className="px-4 py-2">
+                        <button
+                          onClick={handleUpdateRevenue}
+                          className="bg-green-500 text-white px-2 py-1 rounded mr-1"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="bg-gray-400 text-white px-2 py-1 rounded"
+                        >
+                          Cancel
+                        </button>
+                      </td>
+                    </tr>
+                  ) : (
+                    <tr key={revenue.id} className="border-b border-gray-200">
+                      <td className="px-4 py-2 text-gray-800">{revenue.activity}</td>
+                      <td className="px-4 py-2 text-gray-800">{revenue.amount}</td>
+                      <td className="px-4 py-2 text-gray-800">{revenue.date}</td>
+                      <td className="px-4 py-2 text-gray-800">{formatTimestamp(revenue.timestamp)}</td>
+                      <td className="px-4 py-2 text-gray-800">{revenue.shop}</td>
+                      <td className="px-4 py-2 text-gray-800">{revenue.username}</td>
+                      <td className="px-4 py-2 text-gray-800">{revenue.description || ''}</td>
+                      <td className="px-4 py-2">
+                        <button
+                          onClick={() => handleEditRevenue(revenue)}
+                          className="bg-yellow-500 text-white px-2 py-1 rounded"
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                )}
               </tbody>
             </table>
           </div>
+          {/* Pagination controls for revenues */}
+          {revenuePageCount > 1 && (
+            <div className="flex justify-center mt-4 gap-2">
+              <button
+                onClick={() => setRevenuePage(p => Math.max(1, p - 1))}
+                disabled={revenuePage === 1}
+                className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+              >Prev</button>
+              <span className="px-2 py-1">{revenuePage} / {revenuePageCount}</span>
+              <button
+                onClick={() => setRevenuePage(p => Math.min(revenuePageCount, p + 1))}
+                disabled={revenuePage === revenuePageCount}
+                className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+              >Next</button>
+            </div>
+          )}
         </div>
         <div className="bg-white p-6 rounded-lg shadow-md mt-6">
           <h2 className="text-xl font-medium text-gray-700 mb-4">Expense Records</h2>
@@ -320,23 +559,116 @@ function UserPage({ user, onLogout }) {
                   <th className="px-4 py-2 text-left text-gray-600">Shop</th>
                   <th className="px-4 py-2 text-left text-gray-600">Recorded By</th>
                   <th className="px-4 py-2 text-left text-gray-600">Description</th>
+                  <th className="px-4 py-2 text-left text-gray-600">Edit</th>
                 </tr>
               </thead>
               <tbody>
-                {expenses.map((expense) => (
-                  <tr key={expense.id} className="border-b border-gray-200">
-                    <td className="px-4 py-2 text-gray-800">{expense.category}</td>
-                    <td className="px-4 py-2 text-gray-800">{expense.amount}</td>
-                    <td className="px-4 py-2 text-gray-800">{expense.date}</td>
-                    <td className="px-4 py-2 text-gray-800">{formatTimestamp(expense.timestamp)}</td>
-                    <td className="px-4 py-2 text-gray-800">{expense.shop}</td>
-                    <td className="px-4 py-2 text-gray-800">{expense.username}</td>
-                    <td className="px-4 py-2 text-gray-800">{expense.description || ''}</td>
+                {paginatedExpenses.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="text-center text-gray-400 py-4">
+                      {(filterDateFrom || filterDateTo || expenseCategoryFilter) ? "No records found." : "Please select a date range or filter to view records."}
+                    </td>
                   </tr>
-                ))}
+                )}
+                {paginatedExpenses.map((expense) =>
+                  editingExpense && editingExpense.id === expense.id ? (
+                    <tr key={expense.id} className="border-b border-gray-200 bg-yellow-50">
+                      <td className="px-4 py-2">
+                        <select
+                          name="category"
+                          className="p-1 border rounded"
+                          value={editingExpense.category}
+                          onChange={handleEditExpenseChange}
+                        >
+                          {expenseCategories.map((category) => (
+                            <option key={category} value={category}>{category}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-4 py-2">
+                        <input
+                          type="number"
+                          name="amount"
+                          className="p-1 border rounded w-24"
+                          value={editingExpense.amount}
+                          onChange={handleEditExpenseChange}
+                        />
+                      </td>
+                      <td className="px-4 py-2">
+                        <input
+                          type="date"
+                          name="date"
+                          className="p-1 border rounded"
+                          value={editingExpense.date}
+                          onChange={handleEditExpenseChange}
+                        />
+                      </td>
+                      <td className="px-4 py-2">{formatTimestamp(editingExpense.timestamp)}</td>
+                      <td className="px-4 py-2">{editingExpense.shop}</td>
+                      <td className="px-4 py-2">{editingExpense.username}</td>
+                      <td className="px-4 py-2">
+                        <input
+                          type="text"
+                          name="description"
+                          className="p-1 border rounded"
+                          value={editingExpense.description}
+                          onChange={handleEditExpenseChange}
+                        />
+                      </td>
+                      <td className="px-4 py-2">
+                        <button
+                          onClick={handleUpdateExpense}
+                          className="bg-green-500 text-white px-2 py-1 rounded mr-1"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="bg-gray-400 text-white px-2 py-1 rounded"
+                        >
+                          Cancel
+                        </button>
+                      </td>
+                    </tr>
+                  ) : (
+                    <tr key={expense.id} className="border-b border-gray-200">
+                      <td className="px-4 py-2 text-gray-800">{expense.category}</td>
+                      <td className="px-4 py-2 text-gray-800">{expense.amount}</td>
+                      <td className="px-4 py-2 text-gray-800">{expense.date}</td>
+                      <td className="px-4 py-2 text-gray-800">{formatTimestamp(expense.timestamp)}</td>
+                      <td className="px-4 py-2 text-gray-800">{expense.shop}</td>
+                      <td className="px-4 py-2 text-gray-800">{expense.username}</td>
+                      <td className="px-4 py-2 text-gray-800">{expense.description || ''}</td>
+                      <td className="px-4 py-2">
+                        <button
+                          onClick={() => handleEditExpense(expense)}
+                          className="bg-yellow-500 text-white px-2 py-1 rounded"
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                )}
               </tbody>
             </table>
           </div>
+          {/* Pagination controls for expenses */}
+          {expensePageCount > 1 && (
+            <div className="flex justify-center mt-4 gap-2">
+              <button
+                onClick={() => setExpensePage(p => Math.max(1, p - 1))}
+                disabled={expensePage === 1}
+                className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+              >Prev</button>
+              <span className="px-2 py-1">{expensePage} / {expensePageCount}</span>
+              <button
+                onClick={() => setExpensePage(p => Math.min(expensePageCount, p + 1))}
+                disabled={expensePage === expensePageCount}
+                className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+              >Next</button>
+            </div>
+          )}
         </div>
       </div>
     </div>
